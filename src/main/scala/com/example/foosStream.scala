@@ -13,6 +13,7 @@ import java.util.Arrays
 
 case class Bar(id: String, baz: Option[String])
 case class Foo(bar: Option[Bar])
+case class Far(id: String, bar: Option[Bar])
 
 object FoosSource:
   private val data =
@@ -41,14 +42,14 @@ object FoosSource:
       ).asJava
     )
 
-class FakeProcessFunction extends KeyedProcessFunction[String, Foo, Foo]:
+class FakeProcessFunction extends KeyedProcessFunction[String, Foo, Far]:
   override def processElement(
       event: Foo,
-      ctx: KeyedProcessFunction[String, Foo, Foo]#Context,
-      out: Collector[Foo]
+      ctx: KeyedProcessFunction[String, Foo, Far]#Context,
+      out: Collector[Far]
   ): Unit =
     out.collect(
-      event.copy(bar = event.bar.map(b => b.copy(id = b.id + "-mapped")))
+      Far(event.bar.map(_.id).getOrElse("empty") + "-mapped", event.bar)
     )
 
 @main def foosStream =
